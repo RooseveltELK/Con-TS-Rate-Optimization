@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from bandits import BernoulliBandit
-from solvers import Solver, EpsilonGreedy, UCB1, BayesianUCB, ThompsonSampling
+from solvers import Solver, EpsilonGreedy, ThompsonSampling, ConTS, GORS # UCB1, BayesianUCB
 
 
 def plot_results(solvers, solver_names, figname):
@@ -58,42 +58,45 @@ def plot_results(solvers, solver_names, figname):
     plt.savefig(figname)
 
 
-def experiment(K, N):
+def experiment(N):
     """
     Run a small experiment on solving a Bernoulli bandit with K slot machines,
     each with a randomly initialized reward probability.
 
     Args:
         K (int): number of slot machiens.
-        N (int): number of time steps to try.
+        N (int): numbefr of time steps to try.
     """
 
     b = BernoulliBandit() # K is the number of rate selections, I removed K in that rate list is fixed
     print ("Randomly generated Bernoulli bandit has reward probabilities:\n", b.probas)
-    print ("The best machine has index: {} and proba: {}".format(
-        max(range(K), key=lambda i: b.probas[i]), max(b.probas)))
+    print ("The best machine has index: {} and throughput: {}".format(
+        max(range(b.n), key=lambda i: b.throughput[i]), max(b.throughput)))
 
     test_solvers = [
         EpsilonGreedy(b, 0.01),
         # UCB1(b),
         # BayesianUCB(b, 3, 1, 1),
-        ThompsonSampling(b, 1, 1)
+        ThompsonSampling(b, 1, 1),
+        ConTS(b,1,1),
+        GORS(b)
     ]
     names = [
         # 'Full-exploitation',
         # 'Full-exploration',
         r'$\epsilon$' + '-Greedy',
-        'UCB1',
-        'Bayesian UCB',
-        'Thompson Sampling'
+        # 'UCB1',
+        # 'Bayesian UCB',
+        'Thompson Sampling',
+        'Constrained TS',
+        'G-ORS'
     ]
-
     for s in test_solvers:
         s.run(N)
 
-    plot_results(test_solvers, names, "results_K{}_N{}.png".format(K, N))
+    plot_results(test_solvers, names, "results_N{}.png".format(N))
 
 
 if __name__ == '__main__':
-    experiment(10, 5000)
+    experiment(1000)
 
